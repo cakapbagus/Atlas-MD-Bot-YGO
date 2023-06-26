@@ -1,0 +1,60 @@
+{
+    "name": "atlas-ygo",
+    "version": "1.1.0",
+    "description": "Atlas MD with YGO add-on.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node --max-old-space-size=2048 index.js",
+        "start2": "pm2 start index.js -i 0 --watch --ignore-watch=\"node_modules\"",
+        "stop": "pm2 stop index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FantoX001/Atlas-MD.git"
+    },
+    "keywords": [
+        "bot",
+        "whatsapp bot",
+        "whatsapp",
+        "baileys",
+        "baileys bot",
+        "md bot",
+        "ygo",
+        "yugioh",
+        "yu-gi-oh"
+    ],
+    "author": "Edo1989",
+    "license": "MIT",
+    "homepage": "https://github.com/FantoX001/Atlas-MD#readme",
+    "dependencies": {
+        "@hapi/boom": "^10.0.1",
+        "@kreisler/js-google-translate-free": "^2.1.0",
+        "@whiskeysockets/baileys": "^6.3.0",
+        "async-g-i-s": "^1.4.0",
+        "axios": "^1.4.0",
+        "chalk": "^4.1.2",
+        "cheerio": "^1.0.0-rc.12",
+        "child_process": "^1.0.2",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "figlet": "^1.6.0",
+        "file-type": "^16.5.4",
+        "form-data": "^4.0.0",
+        "formdata-node": "^4.4.1",
+        "human-readable": "^0.2.1",
+        "jimp": "^0.16.13",
+        "jsdom": "^22.1.0",
+        "moment-timezone": "^0.5.43",
+        "mongoose": "^7.3.1",
+        "node-fetch": "^2.6.9",
+        "openai": "^3.3.0",
+        "path": "^0.12.7",
+        "pdfkit": "^0.13.0",
+        "pino": "^8.14.0",
+        "qrcode": "^1.5.3",
+        "qrcode-terminal": "^0.12.0",
+        "redis": "^4.6.7",
+        "wa-sticker-formatter": "^4.4.4"
+    }
+}
