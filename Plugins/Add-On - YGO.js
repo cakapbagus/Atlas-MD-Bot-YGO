@@ -4,6 +4,7 @@ const {
   searchCard,
   getStatus,
   getArtwork,
+  getPrice_TCGplayer,
 } = require('../System/YGO/Scraping');
 
 let mergedCommands = [
@@ -26,6 +27,10 @@ let mergedCommands = [
   'ocg',
   'goatbanlist',
   'goat',
+  //   'tcgplayer',
+  //   'tcgp',
+  //   'trollandtoad',
+  //   'tnt',
 ];
 
 module.exports = {
@@ -40,6 +45,8 @@ module.exports = {
     'tcgbanlist',
     'ocgbanlist',
     'goatbanlist',
+    // 'tcgplayer',
+    // 'trollandtoad',
   ],
   description: 'Yu-Gi-Oh Add-On',
   start: async (Atlas, m, { inputCMD, text, args, prefix }) => {
@@ -68,11 +75,10 @@ module.exports = {
               { quoted: m }
             );
           } else {
-            let message =
-              '*Please try with another keyword.*\n🗃️ *Found multiple results:*\n\n';
-            for (const card of cards) message += `➧ ${card.name}\n`;
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
 
-            message += `\n_Please try with another keyword._`;
             return m.reply(message);
           }
         } catch (e) {
@@ -108,11 +114,10 @@ module.exports = {
                 { quoted: m }
               );
           } else {
-            let message =
-              '*Please try with another keyword.*\n🗃️ *Found multiple results:*\n\n';
-            for (const card of cards) message += `➧ ${card.name}\n`;
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
 
-            message += `\n_Please try with another keyword._`;
             return m.reply(message);
           }
         } catch (e) {
@@ -145,10 +150,10 @@ module.exports = {
               { quoted: m }
             );
           } else {
-            let message =
-              '*Please try with another keyword.*\n🗃️ *Found multiple results:*\n\n';
-            for (const card of cards) message += `➧ ${card.name}\n`;
-            message += `\n_Please try with another keyword._`;
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
+
             return m.reply(message);
           }
         } catch {
@@ -174,7 +179,7 @@ module.exports = {
 
             const name = c.name;
             const type = c.type;
-            const status = await getStatus(c.id);
+            const status = await getStatus(c.name);
             const desc = c.desc;
 
             let message = `*${name}*\n\`\`\`[${type}]\`\`\`\n`;
@@ -190,10 +195,10 @@ module.exports = {
               { quoted: m }
             );
           } else {
-            let message =
-              '*Please try with another keyword.*\n🗃️ *Found multiple results:*\n\n';
-            for (const card of cards) message += `➧ ${card.name}\n`;
-            message += `\n_Please try with another keyword._`;
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
+
             return m.reply(message);
           }
         } catch {
@@ -214,8 +219,9 @@ module.exports = {
 
         try {
           const cards = await searchCard(text.trim());
+          console.log(cards[0].name);
           if (cards.length == 1) {
-            const r = await getRuling(cards[0].id);
+            const r = await getRuling(cards[0].name);
 
             let message = `*${cards[0].name}*\n\n${r[0]}\n\nOfficial:\n_${r[1]}_\n\nExternal:\n_${r[2]}_\n\n🌍 ${botName}`;
             Atlas.sendMessage(
@@ -226,10 +232,10 @@ module.exports = {
               { quoted: m }
             );
           } else {
-            let message =
-              '*Please try with another keyword.*\n🗃️ *Found multiple results:*\n\n';
-            for (const card of cards) message += `➧ ${card.name}\n`;
-            message += `\n_Please try with another keyword._`;
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
+
             return m.reply(message);
           }
         } catch (e) {
@@ -395,6 +401,43 @@ module.exports = {
           );
         }
         break;
+
+      //   case 'tcgplayer':
+      //   case 'tcgp':
+      //     if (!text) {
+      //       return m.reply(
+      //         `Please provide name or id !\n\nExample: *${prefix}tcgp kuribandit or ${prefix}tcgp 7485*`
+      //       );
+      //     }
+
+      //     try {
+      //       const cards = await searchCard(text.trim());
+      //       if (cards.length == 1) {
+      //         const tcgPrice = await getPrice_TCGplayer(cards[0].id);
+
+      //         const message = `*${cards[0].name}*\n\n${tcgPrice}\n🌍 ${botName}`;
+
+      //         Atlas.sendMessage(
+      //           m.from,
+      //           {
+      //             text: message,
+      //           },
+      //           { quoted: m }
+      //         );
+      //       } else {
+      //         let message = '🗃️ *Found multiple results:*\n\n';
+      //         for (const card of cards)
+      //           message += `➧ ${card.name} (${card.id})\n`;
+
+      //         return m.reply(message);
+      //       }
+      //     } catch (e) {
+      //       console.error(e);
+      //       return m.reply(
+      //         `Please provide name or id !\n\nExample: *${prefix}tcgp kuribandit or ${prefix}tcgp 7485*`
+      //       );
+      //     }
+      //     break;
 
       default:
         break;

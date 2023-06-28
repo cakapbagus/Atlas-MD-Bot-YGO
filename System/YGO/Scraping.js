@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const jsGoogleTranslateFree = require('@kreisler/js-google-translate-free');
+const google = require('googlethis');
 
 const ruleText = async (url) => {
   try {
@@ -19,9 +20,55 @@ const ruleText = async (url) => {
   }
 };
 
-exports.getRuling = async (card_id) => {
+const getKonamiId = async (card_name) => {
   try {
-    const req = `getRuling_${card_id}`;
+    const req = `getKonamiId_${card_name}`;
+    const cacheResults = await redisClient.get(req);
+    if (cacheResults) return JSON.parse(cacheResults);
+
+    const rulings = await this.getRuling(card_name);
+    const id = rulings[2].split('#')[1];
+
+    await redisClient.set(req, JSON.stringify(id));
+
+    return id;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getTcgSet = async (card_id) => {
+  try {
+    const req = `getTcgSet_${card_id}`;
+    const cacheResults = await redisClient.get(req);
+    if (cacheResults) return JSON.parse(cacheResults);
+
+    const baseUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${card_id}`;
+    const res = await axios.get(baseUrl);
+
+    const pricelist = res.data.data[0].card_sets;
+
+    let set_codes = [];
+    for (const p of pricelist) set_codes.push(p.set_code);
+
+    const uniqueSet = [...new Set(set_codes)];
+
+    await redisClient.set(req, JSON.stringify(uniqueSet), {
+      EX: 86400,
+      NX: true,
+    });
+
+    return uniqueSet;
+  } catch (err) {
+    throw err;
+  }
+};
+
+//EXPORTS//
+
+exports.getRuling = async (card_name) => {
+  try {
+    const req = `getRuling_${card_name}`;
     const cacheResults = await redisClient.get(req);
     if (cacheResults) {
       //   const r = JSON.parse(cacheResults);
@@ -29,7 +76,7 @@ exports.getRuling = async (card_id) => {
       return JSON.parse(cacheResults);
     }
 
-    const url = `https://yugipedia.com/wiki/${card_id}`;
+    const url = `https://yugipedia.com/wiki/${encodeURIComponent(card_name)}`;
     const response = await axios.get(url);
     const html = response.data;
     const $ = cheerio.load(html);
@@ -46,26 +93,12 @@ exports.getRuling = async (card_id) => {
 
     const rule = [text, official, external];
 
-    await redisClient.set(req, JSON.stringify(rule));
+    await redisClient.set(req, JSON.stringify(rule), {
+      EX: 86400,
+      NX: true,
+    });
 
     return rule;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.getKonamiId = async (card_id) => {
-  try {
-    const req = `getKonamiId_${card_id}`;
-    const cacheResults = await redisClient.get(req);
-    if (cacheResults) return JSON.parse(cacheResults);
-
-    const rulings = await this.getRuling(card_id);
-    const id = rulings[2].split('#')[1];
-
-    await redisClient.set(req, JSON.stringify(id));
-
-    return id;
   } catch (err) {
     throw err;
   }
@@ -80,8 +113,12 @@ exports.searchCard = async (card) => {
     let res;
     let url;
     if (/^\d+$/.test(card) && card.length > 1) {
-      const id = await this.getKonamiId(card);
-      url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?konami_id=${id}`;
+      try {
+        url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${card}`;
+        res = await axios.get(url);
+      } catch {
+        url = `https://db.ygoprodeck.com/api/v7/cardinfo.php?konami_id=${card}`;
+      }
     } else {
       card = encodeURIComponent(card);
       try {
@@ -145,9 +182,16 @@ exports.getBanList = async (text) => {
   }
 };
 
-exports.getStatus = async (card_id) => {
+exports.getStatus = async (card_name) => {
   try {
-    const url = `https://yugipedia.com/wiki/${card_id}`;
+    const req = `getStatus_${card_name}`;
+    const cacheResults = await redisClient.get(req);
+    if (cacheResults) {
+      const obj = JSON.parse(cacheResults);
+      return new Map(Object.entries(obj));
+    }
+
+    const url = `https://yugipedia.com/wiki/${encodeURIComponent(card_name)}`;
     const res = await axios.get(url);
     const html = res.data;
     const $ = cheerio.load(html);
@@ -186,6 +230,11 @@ exports.getStatus = async (card_id) => {
       ['OCG', ocg_status],
       ['TCG', tcg_status],
     ]);
+
+    await redisClient.set(req, JSON.stringify(Object.fromEntries(status)), {
+      EX: 86400,
+      NX: true,
+    });
 
     return status;
   } catch (err) {
@@ -246,6 +295,213 @@ exports.getArtwork = async (card) => {
     throw err;
   }
 };
+
+//BUG
+exports.getPrice_TCGplayer = async (card_id) => {
+  try {
+    const url =
+      'https://ygoprodeck.com/card/lyna-the-light-charmer-lustrous-11919';
+    const res = await axios.get(url);
+    const html = res.data;
+    const $ = cheerio.load(html);
+
+    const p$ = $('.text-right').text();
+    console.log(p$);
+
+    // price.each((i, el) => {
+    //     $(el).children('a').
+    //   console.log($(el).text());
+    //   //   id_set_list.push($(el).find('div:first > p > a').text().trim());
+    //   //   let n = encodeURIComponent($(el).find('div:nth(1) > p > a').text());
+    // });
+
+    // var price = $('span')
+    //   .filter(function () {
+    //     return $(this).text().trim() === 'Market Price:';
+    //   })
+    //   .next()
+    //   .text();
+    return '';
+
+    const uniqueSet = await getTcgSet(card_id);
+
+    const options = {
+      page: 0,
+      safe: false,
+      parse_ads: false,
+      additional_params: {
+        // add additional parameters here, see https://moz.com/blog/the-ultimate-guide-to-the-google-search-parameters and https://www.seoquake.com/blog/google-search-param/
+        hl: 'en',
+      },
+    };
+
+    //gather url
+    let final_url = [];
+    for (const set of uniqueSet) {
+      const search_res = await google.search(
+        `$ "${set}" site:https://www.tcgplayer.com/product`,
+        options
+      );
+      const data = search_res.results;
+      for (const d of data) {
+        if (d.description.includes(set)) final_url.push(d.url);
+      }
+    }
+
+    let result = '_*TCGplayer Price (TCG)*_\n';
+    //start scraping
+    for (const url of final_url) {
+      //   console.log(url);
+      const res = await axios.get(`${url}?Language=English`);
+      const html = res.data;
+      const $ = cheerio.load(html);
+
+      //   const set_code = $('.product__item-details__attributes')
+      //     .children('li:first > span')
+      //     .text();
+      //   const set_rarity = $('.product__item-details__attributes')
+      //     .children('li:nth[1] > span')
+      //     .text();
+      //   const price = $('span:contains("$")');
+      var title = $('title').text();
+      console.log(title);
+
+      var price = $('span')
+        .filter(function () {
+          return $(this).text().trim() === 'Market Price:';
+        })
+        .next()
+        .text();
+      console.log(price);
+
+      // result += `${set_code} _${set_rarity} ${set_rarity_code}_ *${
+      //     price ? price : 'out of stock'
+      //   }*\n`;
+    }
+
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// // TODO:Redis
+// exports.getOcgPrice = async (card_name) => {
+//   try {
+//     const card_sets = await getCardSet(card_name);
+
+//     // console.log(card_sets);
+
+//     const options = {
+//       page: 0,
+//       safe: false, // Safe Search
+//       parse_ads: false, // If set to true sponsored results will be parsed
+//       additional_params: {
+//         // add additional parameters here, see https://moz.com/blog/the-ultimate-guide-to-the-google-search-parameters and https://www.seoquake.com/blog/google-search-param/
+//         hl: 'jp',
+//       },
+//     };
+
+//     const response = await google.search(
+//       '20TH-JPC58 $ -B site:suruga-ya.jp/product/detail',
+//       options
+//     );
+//     console.log(response);
+
+//     // suruga-ya
+//     // for (const set of card_sets) {
+//     //   const gUrl = `https://www.google.co.jp/search?q=%24+${set}+-B+site%3Asuruga-ya.jp%2Fproduct%2Fdetail`;
+
+//     //   //     const baseUrl = `https://www.suruga-ya.jp/search?category=5&search_word=${set[0]}`;
+//     //   const res = await axios.get(gUrl);
+//     //   const html = res.data;
+//     //   const $ = cheerio.load(html);
+//     //   const $p = $('span:contains("JP¥")').first().text();
+
+//     //   console.log($p);
+
+//     //   //   console.log(
+//     //   //     $('.title')
+//     //   //       .filter((i, element) => {
+//     //   //         // console.log($(element).text());
+//     //   //         return $(element).text().toLowerCase().includes('JP¥25.800').text();
+//     //   //       })
+//     //   //       .text()
+//     //   //   );
+
+//     //   //   const listing = $(`a:contains("${set}")`).text();
+//     //   //   console.log(listing);
+//     //   //   listing
+//     //   //     .parent('.item')
+//     //   //     .find('.text-red')
+//     //   //     .each((i, el) => {
+//     //   //       console.log($(el).text());
+//     //   //       //   id_set_list.push($(el).find('div:first > p > a').text().trim());
+//     //   //       //   let n = encodeURIComponent($(el).find('div:nth(1) > p > a').text());
+//     //   //     });
+//     // }
+//     // // yuyu-tei
+//     // const baseUrl = `https://yuyu-tei.jp/game_ygo/sell/sell_price.php?name=${ja_name}`;
+//     // const res = await axios.get(baseUrl);
+//     // const html = res.data;
+//     // const $ = cheerio.load(html);
+
+//     // let id_set_list = [];
+//     // let name_list = [];
+//     // let price_list = [];
+//     // let qty_list = [];
+
+//     // const pricelist = $('.card_list_box div');
+
+//     // pricelist.find('div > ul > li').each((i, el) => {
+//     //   id_set_list.push($(el).find('div:first > p > a').text().trim());
+//     //   let n = encodeURIComponent($(el).find('div:nth(1) > p > a').text());
+//     //   n = n.slice(n.indexOf('(') + 1, -1);
+//     //   name_list.push(n);
+//     //   price_list.push($(el).find('div:nth(2) > form > p:first').text().trim());
+//     //   qty_list.push($(el).find('div:nth(2) > form > p:nth(2)').text().trim());
+//     // });
+
+//     // console.log(name_list);
+
+//     let ret = '';
+//     // for (let i = 0; i < id_set_list.length; i += 1) {
+//     //   // const id = id_set_list[i];
+//     //   // const n = await jsGoogleTranslateFree.translate('ja', 'en', name_list[i]);
+//     //   // const price = `¥${price_list[i].replace('円', '')}`;
+//     //   // const qty = /^\d+$/.test(qty) ? qty : 'Out of Stock';
+
+//     //   // console.log(`${id} ${n} ${price} ${qty}`);
+//     // }
+
+//     return ret;
+//   } catch (err) {
+//     throw err;
+//   }
+// };
+
+// const getCardSet = async (card_name) => {
+//   try {
+//     const url = `https://yugipedia.com/wiki/${encodeURIComponent(card_name)}`;
+//     const res = await axios.get(url);
+//     const html = res.data;
+//     const $ = cheerio.load(html);
+
+//     let card_sets = [];
+
+//     const setlist = $('#cts--JP tbody tr');
+//     setlist.each((i, el) => {
+//       const set = $(el).find('td:nth(1) > a').text();
+//       if (!set) return;
+
+//       card_sets.push(set);
+//     });
+
+//     return card_sets;
+//   } catch (err) {
+//     throw err;
+//   }
+// };
 
 ///////TESTING/////////
 // const id = '59438930';

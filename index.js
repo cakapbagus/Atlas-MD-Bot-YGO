@@ -226,10 +226,10 @@ const startAtlas = async () => {
         process.exit();
       } else if (reason === DisconnectReason.connectionClosed) {
         console.log('[ ATLAS ] Connection closed, reconnecting....\n');
-        startAtlas();
+        return startAtlas();
       } else if (reason === DisconnectReason.connectionLost) {
         console.log('[ ATLAS ] Connection Lost from Server, reconnecting...\n');
-        startAtlas();
+        return startAtlas();
       } else if (reason === DisconnectReason.connectionReplaced) {
         console.log(
           '[ ATLAS ] Connection Replaced, Another New Session Opened, Please Close Current Session First!\n'
@@ -243,14 +243,15 @@ const startAtlas = async () => {
         process.exit();
       } else if (reason === DisconnectReason.restartRequired) {
         console.log('[ ATLAS ] Server Restarting...\n');
-        startAtlas();
+        return startAtlas();
       } else if (reason === DisconnectReason.timedOut) {
         console.log('[ ATLAS ] Connection Timed Out, Trying to Reconnect...\n');
-        startAtlas();
+        return startAtlas();
       } else {
         console.log(
           `[ ATLAS ] Server Disconnected: "It's either safe disconnect or WhatsApp Account got banned !\n"`
         );
+        process.exit();
       }
     }
     if (qr) {
