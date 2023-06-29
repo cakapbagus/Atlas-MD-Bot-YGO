@@ -160,7 +160,7 @@ module.exports = {
             );
           }
         } catch (e) {
-          return m.reply(`An error occured, please try again.`);
+          return m.reply(`Please mention a sticker from others to steal it.`);
         }
 
         break;
@@ -390,6 +390,7 @@ module.exports = {
         break;
 
       case 'emojimix':
+      case 'emix':
         if (!args[0]) {
           //   await doReact("❔");
           return m.reply(

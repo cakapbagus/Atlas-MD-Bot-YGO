@@ -4,7 +4,7 @@ const {
   searchCard,
   getStatus,
   getArtwork,
-  getPrice_TCGplayer,
+  getPriceLink,
 } = require('../System/YGO/Scraping');
 
 let mergedCommands = [
@@ -27,6 +27,8 @@ let mergedCommands = [
   'ocg',
   'goatbanlist',
   'goat',
+  'price',
+  'p',
   //   'tcgplayer',
   //   'tcgp',
   //   'trollandtoad',
@@ -45,6 +47,7 @@ module.exports = {
     'tcgbanlist',
     'ocgbanlist',
     'goatbanlist',
+    'prie',
     // 'tcgplayer',
     // 'trollandtoad',
   ],
@@ -56,6 +59,7 @@ module.exports = {
 
     switch (inputCMD) {
       case 'art':
+      case 'a':
         if (!text) {
           return m.reply(
             `Please provide name or id !\n\nExample: *${prefix}art kuribandit or ${prefix}art 7485*`
@@ -101,8 +105,6 @@ module.exports = {
           const cards = await searchCard(text.trim());
           if (cards.length == 1) {
             const gallery = await getArtwork(cards[0].name);
-
-            // if (!artwork[0].length) return m.reply(`Failed to get artworks.`);
 
             for (const [title, art] of gallery)
               Atlas.sendMessage(
@@ -239,7 +241,7 @@ module.exports = {
             return m.reply(message);
           }
         } catch (e) {
-          console.error(e);
+          //   console.error(e);
           return m.reply(
             `Please provide valid input.\n\nExample: *${prefix}rule kuribandit or ${prefix}faq 7485*`
           );
@@ -291,7 +293,7 @@ module.exports = {
             { quoted: m }
           );
         } catch (e) {
-          console.error(e);
+          //   console.error(e);
           return m.reply(
             `You can use this command with additional argument !\n\nExample list:\n*${prefix}tcg*\n*${prefix}tcg limited*\n*${prefix}tcg semi*\n*${prefix}tcg ban*`
           );
@@ -402,42 +404,42 @@ module.exports = {
         }
         break;
 
-      //   case 'tcgplayer':
-      //   case 'tcgp':
-      //     if (!text) {
-      //       return m.reply(
-      //         `Please provide name or id !\n\nExample: *${prefix}tcgp kuribandit or ${prefix}tcgp 7485*`
-      //       );
-      //     }
+      case 'price':
+      case 'p':
+        if (!text) {
+          return m.reply(
+            `Please provide name or id !\n\nExample: *${prefix}price kuribandit or ${prefix}p 7485*`
+          );
+        }
 
-      //     try {
-      //       const cards = await searchCard(text.trim());
-      //       if (cards.length == 1) {
-      //         const tcgPrice = await getPrice_TCGplayer(cards[0].id);
+        try {
+          const cards = await searchCard(text.trim());
+          if (cards.length == 1) {
+            const tcgPrice = await getPriceLink(cards[0]);
 
-      //         const message = `*${cards[0].name}*\n\n${tcgPrice}\n🌍 ${botName}`;
+            const message = `*${cards[0].name}*\n\n${tcgPrice}\n\n🌍 ${botName}`;
 
-      //         Atlas.sendMessage(
-      //           m.from,
-      //           {
-      //             text: message,
-      //           },
-      //           { quoted: m }
-      //         );
-      //       } else {
-      //         let message = '🗃️ *Found multiple results:*\n\n';
-      //         for (const card of cards)
-      //           message += `➧ ${card.name} (${card.id})\n`;
+            Atlas.sendMessage(
+              m.from,
+              {
+                text: message,
+              },
+              { quoted: m }
+            );
+          } else {
+            let message = '🗃️ *Found multiple results:*\n\n';
+            for (const card of cards)
+              message += `➧ ${card.name} (${card.id})\n`;
 
-      //         return m.reply(message);
-      //       }
-      //     } catch (e) {
-      //       console.error(e);
-      //       return m.reply(
-      //         `Please provide name or id !\n\nExample: *${prefix}tcgp kuribandit or ${prefix}tcgp 7485*`
-      //       );
-      //     }
-      //     break;
+            return m.reply(message);
+          }
+        } catch (e) {
+          //   console.error(e);
+          return m.reply(
+            `Please provide name or id !\n\nExample: *${prefix}price kuribandit or ${prefix}p 7485*`
+          );
+        }
+        break;
 
       default:
         break;

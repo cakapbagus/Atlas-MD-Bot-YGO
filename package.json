@@ -1,11 +1,11 @@
 {
     "name": "atlas-ygo",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Atlas MD with YGO add-on.",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "forever start -w index.js",
+        "start": "forever start index.js",
         "start1": "node --max-old-space-size=2048 index.js",
         "start2": "pm2 start index.js -i 0 --watch --ignore-watch=\"node_modules\"",
         "stop": "pm2 stop index.js"

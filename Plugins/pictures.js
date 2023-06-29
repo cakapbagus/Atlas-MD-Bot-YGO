@@ -32,12 +32,18 @@ module.exports = {
         }
         Atlas.sendMessage(
           m.from,
-          { image: { url: imgRes.data.male }, caption: `_For Him..._` },
+          {
+            image: { url: imgRes.data.male },
+            caption: `_For Him..._\n\n🌍 ${botName}`,
+          },
           { quoted: m }
         );
         Atlas.sendMessage(
           m.from,
-          { image: { url: imgRes.data.female }, caption: `_For Her..._` },
+          {
+            image: { url: imgRes.data.female },
+            caption: `_For Her..._\n\n🌍 ${botName}`,
+          },
           { quoted: m }
         );
         break;
@@ -58,7 +64,7 @@ module.exports = {
           try {
             const n = await gis(text.trim());
             const images = n[Math.floor(Math.random() * n.length)].url;
-            const resText = `\n_🎀 Image Search Term:_ *${text}*\n\n_🧩 Powered by_ *${botName}*\n`;
+            const resText = `\n\n🌍 ${botName}`;
             await Atlas.sendMessage(
               m.from,
               {
@@ -108,7 +114,7 @@ module.exports = {
           {
             video: { url: gifUrl },
             gifPlayback: true,
-            caption: `🎀 Gif serach result for: *${text}*\n`,
+            caption: `\n\n🌍 ${botName}`,
           },
           { quoted: m }
         );

@@ -60,7 +60,8 @@ module.exports = {
                 `ID/City not found, please using *${prefix}city* to search ID/City`
               );
 
-            message = `*${namaKota}*\n📅 ${jadwal.tanggal}\n\n🕰️ Subuh ${jadwal.subuh}\n\n🕰️ Terbit ${jadwal.terbit}\n\n🕰️ Dhuha ${jadwal.dhuha}\n\n🕰️ Dzuhur ${jadwal.dzuhur}\n\n🕰️ Ashar ${jadwal.ashar}\n\n🕰️ Maghrib ${jadwal.maghrib}\n\n🕰️ Isya ${jadwal.isya}`;
+            message = `*${namaKota}*\n${jadwal.tanggal}\n\nSubuh  ${jadwal.subuh}\nTerbit  ${jadwal.terbit}\nDhuha  ${jadwal.dhuha}\nDzuhur  ${jadwal.dzuhur}\nAshar  ${jadwal.ashar}\nMaghrib  ${jadwal.maghrib}\nIsya  ${jadwal.isya}`;
+            message += `\n\n🌍 ${botName}`;
             await redisClient.set(req, JSON.stringify(message), {
               EX: 86400,
               NX: true,
@@ -90,7 +91,8 @@ module.exports = {
           const url_jadwal = `https://api.banghasan.com/sholat/format/json/jadwal/kota/${id}/tanggal/${year}-${month}-${date}`;
           const jadwal = (await axios.get(url_jadwal)).data.jadwal.data;
 
-          message = `*${namaKota}*\n📅 ${jadwal.tanggal}\n\n🕰️ Subuh ${jadwal.subuh}\n\n🕰️ Terbit ${jadwal.terbit}\n\n🕰️ Dhuha ${jadwal.dhuha}\n\n🕰️ Dzuhur ${jadwal.dzuhur}\n\n🕰️ Ashar ${jadwal.ashar}\n\n🕰️ Maghrib ${jadwal.maghrib}\n\n🕰️ Isya ${jadwal.isya}`;
+          message = `*${namaKota}*\n${jadwal.tanggal}\n\nSubuh  ${jadwal.subuh}\nTerbit  ${jadwal.terbit}\nDhuha  ${jadwal.dhuha}\nDzuhur  ${jadwal.dzuhur}\nAshar  ${jadwal.ashar}\nMaghrib  ${jadwal.maghrib}\nIsya  ${jadwal.isya}`;
+          message += `\n\n🌍 ${botName}`;
           await redisClient.set(req, JSON.stringify(message), {
             EX: 86400,
             NX: true,
@@ -121,6 +123,8 @@ module.exports = {
           message += `*${data.id}* : ${data.nama.toLowerCase()}`;
           message += data != kota[kota.length - 1] ? `\n` : '';
         }
+
+        message += `\n\n🌍 ${botName}`;
 
         await Atlas.sendMessage(m.from, { text: message }, { quoted: m });
 

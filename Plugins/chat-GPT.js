@@ -138,7 +138,10 @@ module.exports = {
             }
             Atlas.sendMessage(
               m.from,
-              { image: { url: imageUrl }, caption: text },
+              {
+                image: { url: imageUrl },
+                caption: `*${text}*\n\n🌍 ${botName}`,
+              },
               { quoted: m }
             );
           })

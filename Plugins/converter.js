@@ -38,7 +38,9 @@ module.exports = {
           //   await doReact('🔗');
           try {
             let anu = await GraphOrg(media5);
-            m.reply(`*Generated Image URL:* \n\n${util.format(anu)}\n`);
+            m.reply(
+              `*Generated Image URL:* \n\n${util.format(anu)}\n\n🌍 ${botName}`
+            );
           } catch {
             // await doReact('❌');
             return m.reply(
@@ -49,7 +51,9 @@ module.exports = {
           //   await doReact('▶️');
           try {
             let anu = await GraphOrg(media5);
-            m.reply(`*Generated Video URL:* \n\n${util.format(anu)}\n`);
+            m.reply(
+              `*Generated Video URL:* \n\n${util.format(anu)}\n\n🌍 ${botName}`
+            );
           } catch (e) {
             // await doReact('❌');
             fs.unlinkSync(media5);
